@@ -2,6 +2,19 @@ const http = require("http");
 const fs = require("fs");
 const url = require("url");
 const { parse } = require("querystring");
+const cluster = require('cluster');
+const cpus = require('os').cpus()
+
+const numCpus = cpus.length;
+
+if(cluster.isMaster) {
+    console.log(numCpus)
+    console.log(process.pid)
+
+    for(let i = 0; i < numCpus; i++) {
+      cluster.fork()
+    }
+}
 
 function collectRequestData(request, callback) {
   const FORM_URLENCODED = "application/x-www-form-urlencoded";
