@@ -4,6 +4,7 @@ const url = require("url");
 const { parse } = require("querystring");
 const cluster = require('cluster');
 const cpus = require('os').cpus()
+const uuid = require('uuid')
 
 const numCpus = cpus.length;
 
@@ -25,13 +26,7 @@ if(cluster.isMaster) {
       res.statusCode = 401;
       res.end("Auth token is not found!");
     } else if (req.method === "GET" && req.url === "/") {
-      // cluster test
-      let count = 0;
-      for(let i = 0; i < 5000000000; i++) {
-        count += i;
-      }
-      res.write(`${count}`);
-      res.end();
+      res.end("Hello");
     } 
     else if (req.method === "GET" && req.url === "/api/users") {
       res.writeHead(200, { "Content-Type": "application/json" });
@@ -78,7 +73,7 @@ if(cluster.isMaster) {
       });
     } 
     else if (req.method === "POST" && req.url === "/api/users") {
-      res.writeHead(200, { "Content-Type": "application/x-www-form-urlencoded" });
+      res.writeHead(200, { "Content-Type": "application/json" });
       collectRequestData(req, (result) => {
         fs.readFile("users.json", "utf8", function readFileCallback(err, data) {
           if (err) throw new Error(err);
@@ -86,7 +81,7 @@ if(cluster.isMaster) {
             newUser = {
               name: result?.name || "name not found",
               age: result?.age || "age not found",
-              id: result?.id || "id not found",
+              id: uuid.v1()
             };
             usersFile = JSON.parse(data);
             usersFile.users.push(newUser);
@@ -113,7 +108,6 @@ if(cluster.isMaster) {
           let userById = usersFile.users.find((i) => i.id === parsed);
           userById["name"] = result?.name || userById.name;
           userById["age"] = result?.age || userById.age;
-          userById["id"] = result?.id || userById.id;
           fs.writeFile("users.json", JSON.stringify(usersFile), (err) => {
             if (err) throw new Error(err);
           });
