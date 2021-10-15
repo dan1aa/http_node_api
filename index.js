@@ -25,7 +25,12 @@ if(cluster.isMaster) {
       res.statusCode = 401;
       res.end("Auth token is not found!");
     } else if (req.method === "GET" && req.url === "/") {
-      res.write("HOME");
+      // cluster test
+      let count = 0;
+      for(let i = 0; i < 5000000000; i++) {
+        count += i;
+      }
+      res.write(`${count}`);
       res.end();
     } 
     else if (req.method === "GET" && req.url === "/api/users") {
@@ -37,7 +42,7 @@ if(cluster.isMaster) {
     } 
     else if (
       req.method === "GET" &&
-      req.url.match(pathRegex(/\/api\/users\/([0-9]+)/))
+      req.url.match(pathRegex('users'))
     ) {
       res.writeHead(200, { "Content-Type": "application/json" });
       const pathName = url.parse(`${req.url}`).pathname;
@@ -51,7 +56,7 @@ if(cluster.isMaster) {
     } 
     else if (
       req.method === "DELETE" &&
-      req.url.match(pathRegex(/\/api\/users\/([0-9]+)/))
+      req.url.match(pathRegex('users'))
     ) {
       const pathName = url.parse(`${req.url}`).pathname;
       const parsed = pathName.split("/").slice(-1).toString();
@@ -96,7 +101,7 @@ if(cluster.isMaster) {
     } 
     else if (
       req.method === "PATCH" &&
-      req.url.match(pathRegex(/\/api\/users\/([0-9]+)/))
+      req.url.match(pathRegex('users'))
     ) {
       res.writeHead(200, { "Content-Type": "application/x-www-form-urlencoded" });
       const pathName = url.parse(`${req.url}`).pathname;
@@ -137,11 +142,11 @@ if(cluster.isMaster) {
     }
   }
   
-  function pathRegex(regexUri) {
-    return regexUri;
-  }  
+  function pathRegex(path) {
+    const reg = `/api\/${path}\/([0-9]+)`;
+    return new RegExp(reg);
+   }
   
   server.listen(3000, () => console.log("server listening on 3000"));
   
 }
-
